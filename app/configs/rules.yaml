@@ -1,0 +1,43 @@
+field_rules:
+  time:
+    type: "time"
+    required: true
+    format: "HH:MM"
+  customer_queue:
+    type: "string"
+    required: true
+  color:
+    type: "string"
+    required: true
+  date_batch_no:
+    type: "string"
+    required: true
+  material_name:
+    type: "string"
+    required: true
+  material_weight:
+    type: "number"
+    required: true
+    min: 0
+  material_unit:
+    type: "string"
+    required: true
+  machine_name:
+    type: "string"
+    required: false
+  machine_value:
+    type: "number"
+    required: false
+  temperature_name:
+    type: "string"
+    required: false
+  temperature_value:
+    type: "number"
+    required: false
+    min: -50
+    max: 500
+
+confidence_thresholds:
+  green: 0.95
+  yellow: 0.80
+  red: 0.0

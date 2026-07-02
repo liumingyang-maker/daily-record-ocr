@@ -1,0 +1,6 @@
+ocr:
+  engine: "paddleocr"
+  model: "PP-OCRv6-medium"
+  use_gpu: false
+  lang: "ch"
+  confidence_threshold: 0.6

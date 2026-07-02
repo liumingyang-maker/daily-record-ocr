@@ -1,0 +1,19 @@
+units:
+  g:
+    aliases: ["g", "克", "gram", "grams"]
+    conversion_to_kg: 0.001
+  kg:
+    aliases: ["kg", "千克", "公斤", "kilogram", "kilograms"]
+    conversion_to_kg: 1
+  t:
+    aliases: ["t", "吨", "ton", "tons"]
+    conversion_to_kg: 1000
+  bag:
+    aliases: ["bag", "袋", "包"]
+    conversion_to_kg: null
+  bucket:
+    aliases: ["bucket", "桶"]
+    conversion_to_kg: null
+  portion:
+    aliases: ["portion", "份"]
+    conversion_to_kg: null

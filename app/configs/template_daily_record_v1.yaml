@@ -1,0 +1,74 @@
+template:
+  name: "daily_record_v1"
+  description: "每日生产记录模板坐标配置"
+  canonical_size:
+    width: 1800
+    height: 2500
+
+  record_blocks:
+    - id: "block_1"
+      rect: [50, 300, 1750, 800]
+    - id: "block_2"
+      rect: [50, 850, 1750, 1350]
+    - id: "block_3"
+      rect: [50, 1400, 1750, 1900]
+
+  header_fields:
+    - name: "time"
+      roi_in_record: [100, 310, 300, 360]
+    - name: "customer_queue"
+      roi_in_record: [350, 310, 700, 360]
+    - name: "color"
+      roi_in_record: [750, 310, 1050, 360]
+    - name: "date_batch_no"
+      roi_in_record: [1100, 310, 1700, 360]
+
+  material_table:
+    roi_in_record: [100, 400, 1700, 700]
+    columns:
+      - "序号"
+      - "原料名称"
+      - "批号"
+      - "用量"
+      - "单位"
+      - "供应商"
+      - "备注"
+      - "确认"
+
+  machine_fields:
+    - name: "搅拌机"
+      roi_in_record: [100, 720, 400, 770]
+    - name: "研磨机"
+      roi_in_record: [450, 720, 750, 770]
+    - name: "分散机"
+      roi_in_record: [800, 720, 1100, 770]
+    - name: "过滤器"
+      roi_in_record: [1150, 720, 1450, 770]
+    - name: "灌装机"
+      roi_in_record: [100, 780, 400, 830]
+    - name: "包装机"
+      roi_in_record: [450, 780, 750, 830]
+
+  temperature_fields:
+    - name: "原料温度"
+      roi_in_record: [100, 1420, 350, 1470]
+    - name: "搅拌温度"
+      roi_in_record: [400, 1420, 650, 1470]
+    - name: "研磨温度"
+      roi_in_record: [700, 1420, 950, 1470]
+    - name: "分散温度"
+      roi_in_record: [1000, 1420, 1250, 1470]
+    - name: "过滤温度"
+      roi_in_record: [1300, 1420, 1550, 1470]
+    - name: "存储温度"
+      roi_in_record: [100, 1490, 350, 1540]
+    - name: "环境温度"
+      roi_in_record: [400, 1490, 650, 1540]
+    - name: "出料温度"
+      roi_in_record: [700, 1490, 950, 1540]
+    - name: "灌装温度"
+      roi_in_record: [1000, 1490, 1250, 1540]
+    - name: "冷却温度"
+      roi_in_record: [1300, 1490, 1550, 1540]
+    - name: "最终温度"
+      roi_in_record: [100, 1560, 350, 1610]

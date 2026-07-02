@@ -1,0 +1,10 @@
+export:
+  sheets:
+    - name: "生产记录汇总"
+      description: "每条生产记录的汇总信息"
+    - name: "配方明细"
+      description: "原料配方详细信息"
+    - name: "识别审查"
+      description: "OCR与MiMo识别结果审查"
+    - name: "导入修正摘要"
+      description: "导入修正操作摘要"

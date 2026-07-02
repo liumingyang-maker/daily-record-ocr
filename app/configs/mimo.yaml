@@ -1,0 +1,12 @@
+mimo:
+  enabled: true
+  mode: "record_level"
+  model: "mimo-v2.5"
+  api_key_env: "MIMO_API_KEY"
+  timeout_seconds: 60
+  max_retry: 2
+  cache_enabled: true
+  prompt_version: "daily_record_v1_202607"
+  send_history_candidates: true
+  max_history_candidates: 10
+  max_material_candidates: 30
