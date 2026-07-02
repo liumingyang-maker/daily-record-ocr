@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}每日生产记录智能识别系统{% endblock %}</title>
+    <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">每日生产记录智能识别系统</div>
+        <div class="navbar-links">
+            <a href="/">首页</a>
+            <a href="/jobs">识别任务</a>
+            <a href="/history-import">历史导入</a>
+            <a href="/materials">物料库</a>
+            <a href="/customers">客户库</a>
+        </div>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+</html>

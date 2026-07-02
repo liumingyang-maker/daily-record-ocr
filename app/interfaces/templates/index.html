@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - 每日生产记录智能识别系统{% endblock %}
+
+{% block content %}
+<h1>仪表盘</h1>
+<div class="card-grid">
+    <div class="card">
+        <h3>识别任务</h3>
+        <p>上传生产记录图片，通过 OCR 和 MIMO 智能识别并提取记录数据。</p>
+        <a href="/jobs" class="btn">进入识别任务</a>
+    </div>
+    <div class="card">
+        <h3>历史导入</h3>
+        <p>导入历史 Excel 生产记录，用于辅助识别匹配和数据补全。</p>
+        <a href="/history-import" class="btn">进入历史导入</a>
+    </div>
+    <div class="card">
+        <h3>物料库</h3>
+        <p>管理物料名称、别名和单位，提升识别准确率。</p>
+        <a href="/materials" class="btn">进入物料库</a>
+    </div>
+</div>
+{% endblock %}

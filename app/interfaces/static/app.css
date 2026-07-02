@@ -1,0 +1,36 @@
+/* Reset & base */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+
+/* Navbar */
+.navbar { background: #1a73e8; color: #fff; display: flex; align-items: center; padding: 0 1.5rem; height: 56px; }
+.navbar-brand { font-size: 1.1rem; font-weight: 600; margin-right: 2rem; white-space: nowrap; }
+.navbar-links a { color: rgba(255,255,255,0.85); text-decoration: none; padding: 0 0.75rem; font-size: 0.95rem; }
+.navbar-links a:hover { color: #fff; }
+
+/* Container */
+.container { max-width: 1200px; margin: 1.5rem auto; padding: 0 1rem; }
+
+/* Card grid */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+.card { background: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.card h3 { margin-bottom: 0.5rem; color: #1a73e8; }
+.card p { color: #666; font-size: 0.95rem; margin-bottom: 1rem; }
+
+/* Buttons */
+.btn { display: inline-block; background: #1a73e8; color: #fff; padding: 0.5rem 1.25rem; border-radius: 4px; text-decoration: none; font-size: 0.9rem; border: none; cursor: pointer; }
+.btn:hover { background: #1557b0; }
+.btn-danger { background: #d93025; }
+.btn-danger:hover { background: #a5271f; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; }
+th { background: #f8f9fa; font-weight: 600; font-size: 0.9rem; color: #555; }
+
+/* Status colors */
+.status-uploaded { color: #1a73e8; }
+.status-processing { color: #f9a825; }
+.status-confirmed { color: #0d904f; }
+.status-failed { color: #d93025; }
+.status-pending { color: #999; }
