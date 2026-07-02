@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>任务详情 - {{ job.job_no }}</h1>
+    <a href="/jobs" class="btn">返回列表</a>
+</div>
+
+<div class="detail-grid">
+    <div class="detail-left">
+        <h2>基本信息</h2>
+        <table>
+            <tr>
+                <th>任务编号</th>
+                <td>{{ job.job_no }}</td>
+            </tr>
+            <tr>
+                <th>状态</th>
+                <td><span class="status status-{{ job.status|lower }}">{{ job.status }}</span></td>
+            </tr>
+            <tr>
+                <th>创建时间</th>
+                <td>{{ job.created_at.strftime('%Y-%m-%d %H:%M:%S') if job.created_at else '-' }}</td>
+            </tr>
+            <tr>
+                <th>OCR引擎</th>
+                <td>{{ job.ocr_engine or '-' }}</td>
+            </tr>
+            <tr>
+                <th>使用MiMo</th>
+                <td>{{ '是' if job.mimo_used else '否' }}</td>
+            </tr>
+            {% if job.error_message %}
+            <tr>
+                <th>错误信息</th>
+                <td class="error-message">{{ job.error_message }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+
+    <div class="detail-right">
+        <h2>原始图片</h2>
+        {% if job.source_image_path %}
+        <div class="image-container">
+            <img src="/uploads/{{ job.source_image_path }}" alt="原始图片" class="preview-image">
+        </div>
+        {% else %}
+        <p class="no-image">暂无图片</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
