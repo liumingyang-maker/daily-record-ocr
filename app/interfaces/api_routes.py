@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, UploadFile
 
+from app.application.export_service import ExportService
 from app.application.fusion_service import FusionService
 from app.application.mimo_service import MimoService
 from app.application.ocr_service import OcrService
