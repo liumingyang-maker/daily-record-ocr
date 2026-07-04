@@ -8,6 +8,7 @@ from app.infrastructure.database.base import Base
 from app.infrastructure.database.session import engine
 from app.interfaces.web_routes import web_router
 from app.interfaces.api_routes import api_router
+from app.interfaces.import_routes import import_router
 
 INTERFACE_DIR = Path(__file__).resolve().parent / "interfaces"
 
@@ -17,6 +18,7 @@ app.mount("/static", StaticFiles(directory=INTERFACE_DIR / "static"), name="stat
 
 app.include_router(web_router)
 app.include_router(api_router, prefix="/api")
+app.include_router(import_router, prefix="/api/import")
 
 
 @app.on_event("startup")
