@@ -39,14 +39,15 @@ git clone https://github.com/liumingyang-maker/daily-record-ocr.git
 cd daily-record-ocr
 
 # 创建虚拟环境并安装依赖
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate  # macOS/Linux
 # 或 .venv\Scripts\activate  # Windows
 
 pip install -r requirements.txt
 
 # 启动服务
-python -m app.main
+python3 -m app.main  # macOS/Linux
+# python -m app.main   # Windows
 ```
 
 浏览器访问 http://127.0.0.1:8765

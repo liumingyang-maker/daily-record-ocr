@@ -35,4 +35,4 @@ fi
 # Run the application
 echo "[INFO] 启动服务 http://127.0.0.1:8765"
 echo "[INFO] 按 Ctrl+C 停止服务"
-python -m app.main
+python3 -m app.main
