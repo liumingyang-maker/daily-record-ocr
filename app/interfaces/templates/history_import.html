@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>历史记录导入</h1>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <h2>上传导入文件</h2>
+    <form id="import-form" enctype="multipart/form-data">
+        <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+            <div>
+                <label for="file">选择文件</label><br>
+                <input type="file" id="file" name="file" accept=".xlsx,.csv" required>
+            </div>
+            <div>
+                <label for="profile">导入配置</label><br>
+                <select id="profile" name="profile" required>
+                    {% for name, cfg in profiles.items() %}
+                    <option value="{{ name }}">{{ cfg.description }} ({{ name }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit">上传并解析</button>
+            </div>
+        </div>
+    </form>
+    <div id="upload-result" style="margin-top: 0.75rem;"></div>
+</div>
+
+<h2>导入批次列表</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>批次编号</th>
+            <th>文件名</th>
+            <th>导入配置</th>
+            <th>状态</th>
+            <th>总行数</th>
+            <th>创建时间</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for batch in batches %}
+        <tr>
+            <td>{{ batch.batch_no }}</td>
+            <td>{{ batch.source_file_name or '-' }}</td>
+            <td>{{ batch.import_profile }}</td>
+            <td><span class="status status-{{ batch.status|lower }}">{{ batch.status }}</span></td>
+            <td>{{ batch.total_rows or '-' }}</td>
+            <td>{{ batch.created_at.strftime('%Y-%m-%d %H:%M') if batch.created_at else '-' }}</td>
+            <td><a href="/api/import/batches/{{ batch.id }}">详情</a></td>
+        </tr>
+        {% endfor %}
+        {% if not batches %}
+        <tr>
+            <td colspan="7" style="text-align: center; color: #999;">暂无导入记录</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<script>
+document.getElementById('import-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const fileInput = document.getElementById('file');
+    const profileSelect = document.getElementById('profile');
+    const resultEl = document.getElementById('upload-result');
+
+    if (!fileInput.files.length) return;
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('profile', profileSelect.value);
+
+    resultEl.textContent = '上传解析中...';
+    resultEl.style.color = '#666';
+    try {
+        const resp = await fetch('/api/import/upload', { method: 'POST', body: formData });
+        if (resp.ok) {
+            const data = await resp.json();
+            resultEl.textContent = '导入成功: 批次 ' + data.batch_no + '，共 ' + data.total_rows + ' 行';
+            resultEl.style.color = 'green';
+            window.location.reload();
+        } else {
+            const data = await resp.json();
+            resultEl.textContent = '导入失败: ' + (data.detail || '未知错误');
+            resultEl.style.color = 'red';
+        }
+    } catch (err) {
+        resultEl.textContent = '导入失败: ' + err.message;
+        resultEl.style.color = 'red';
+    }
+});
+</script>
+{% endblock %}
