@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, UploadFile
 
+from app.application.fusion_service import FusionService
 from app.application.mimo_service import MimoService
 from app.application.ocr_service import OcrService
 from app.application.preprocess_service import process
@@ -85,3 +86,15 @@ async def mimo_recognize_job(job_id: int):
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+fusion_service = FusionService()
+
+
+@api_router.post("/jobs/{job_id}/fuse")
+async def fuse_job(job_id: int):
+    try:
+        result = fusion_service.fuse_job(job_id)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
