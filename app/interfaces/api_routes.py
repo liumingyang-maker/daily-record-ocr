@@ -160,3 +160,15 @@ async def confirm_job(job_id: int):
             "job_no": job.job_no,
             "status": job.status,
         }
+
+
+export_service = ExportService()
+
+
+@api_router.post("/jobs/{job_id}/export")
+async def export_job(job_id: int):
+    try:
+        result = export_service.export_job(job_id)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
