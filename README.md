@@ -130,6 +130,31 @@ launcher\run.bat
 
 首次运行会自动创建虚拟环境、安装依赖、启动服务并打开浏览器。
 
+### 更新到最新版本
+
+**方式一：命令行更新（推荐）**
+
+```bash
+# macOS / Linux
+./launcher/update.sh
+
+# Windows
+launcher\update.bat
+```
+
+脚本会自动检查远程更新、显示更新内容、确认后拉取代码并安装依赖。
+
+**方式二：Web 页面更新**
+
+启动服务后访问 http://127.0.0.1:8765/settings，点击「检查更新」→「一键更新」。
+
+**方式三：手动更新**
+
+```bash
+git pull
+pip install -r requirements.txt
+```
+
 ## 项目结构
 
 ```
@@ -169,6 +194,7 @@ daily-record-ocr/
 │   └── backups/                   # 备份
 ├── launcher/                      # 启动和打包脚本
 │   ├── run.sh / run.bat           # 启动器
+│   ├── update.sh / update.bat     # 一键更新
 │   ├── install.sh / install.bat   # 依赖安装
 │   ├── build_mac.sh               # macOS 打包
 │   └── build_windows.bat          # Windows 打包
