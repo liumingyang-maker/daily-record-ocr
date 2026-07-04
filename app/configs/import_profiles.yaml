@@ -1,0 +1,102 @@
+profiles:
+  type_a_flat:
+    description: "扁平表格格式，一行一条记录"
+    extensions: [".xlsx", ".csv"]
+    skip_rows: 0
+    columns:
+      date:
+        header_aliases: ["日期", "date", "生产日期"]
+        type: "date"
+        required: true
+      time:
+        header_aliases: ["时间", "time", "生产时间"]
+        type: "time"
+        required: false
+      customer:
+        header_aliases: ["客户", "customer", "客户名称", "客户名"]
+        type: "string"
+        required: true
+      product:
+        header_aliases: ["产品", "product", "产品名称", "产品名", "型号"]
+        type: "string"
+        required: true
+      color:
+        header_aliases: ["颜色", "color", "色号"]
+        type: "string"
+        required: false
+      batch_no:
+        header_aliases: ["批号", "batch_no", "batch", "批次号", "批次"]
+        type: "string"
+        required: true
+      material_name:
+        header_aliases: ["物料", "material", "material_name", "物料名称", "物料名", "原料"]
+        type: "string"
+        required: true
+      usage:
+        header_aliases: ["用量", "usage", "数量", "重量", "amount"]
+        type: "float"
+        required: true
+      unit:
+        header_aliases: ["单位", "unit"]
+        type: "string"
+        required: false
+        default: "kg"
+      main_speed:
+        header_aliases: ["主机转速", "main_speed", "主机速度", "主速"]
+        type: "float"
+        required: false
+      feeder_speed:
+        header_aliases: ["喂料转速", "feeder_speed", "喂料速度", "喂速"]
+        type: "float"
+        required: false
+
+  type_b_template:
+    description: "固定模板格式，类似纸质版排版"
+    extensions: [".xlsx", ".csv"]
+    skip_rows: 2
+    columns:
+      date:
+        header_aliases: ["日期", "date", "生产日期"]
+        type: "date"
+        required: true
+      time:
+        header_aliases: ["时间", "time", "生产时间"]
+        type: "time"
+        required: false
+      customer:
+        header_aliases: ["客户", "customer", "客户名称"]
+        type: "string"
+        required: true
+      product:
+        header_aliases: ["产品", "product", "产品名称", "型号"]
+        type: "string"
+        required: true
+      color:
+        header_aliases: ["颜色", "color", "色号"]
+        type: "string"
+        required: false
+      batch_no:
+        header_aliases: ["批号", "batch_no", "batch", "批次号"]
+        type: "string"
+        required: true
+      material_name:
+        header_aliases: ["物料", "material", "material_name", "物料名称", "原料"]
+        type: "string"
+        required: true
+      usage:
+        header_aliases: ["用量", "usage", "数量", "重量", "amount"]
+        type: "float"
+        required: true
+      unit:
+        header_aliases: ["单位", "unit"]
+        type: "string"
+        required: false
+        default: "kg"
+      main_speed:
+        header_aliases: ["主机转速", "main_speed", "主机速度"]
+        type: "float"
+        required: false
+      feeder_speed:
+        header_aliases: ["喂料转速", "feeder_speed", "喂料速度"]
+        type: "float"
+        required: false
