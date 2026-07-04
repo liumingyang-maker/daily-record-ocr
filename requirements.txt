@@ -26,6 +26,7 @@ paddleocr>=2.7.0
 
 # Vision (optional)
 opencv-python>=4.8.0
+opencv-python-headless>=4.8.0
 
 # Dev dependencies
 pytest>=7.4.3
