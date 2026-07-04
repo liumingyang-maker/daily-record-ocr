@@ -13,6 +13,7 @@
 | 候选融合 | 多来源（OCR、MiMo、历史库、物料字典）候选结果自动融合排序 |
 | 人工确认 | 可视化确认页面，支持字段编辑、候选选择、修正日志 |
 | Excel 导出 | 一键导出 4 个 Sheet（记录汇总、配方明细、识别审查、修正摘要） |
+| 后台设置 | Web 界面配置 API Key、模型参数、服务端口等，无需手动编辑文件 |
 | 跨平台 | 支持 Windows、macOS、Linux |
 
 ## 系统架构
@@ -71,7 +72,7 @@ Excel 导出（4 个 Sheet）
 | 视觉大模型 | MiMo API（可替换为其他模型） |
 | Excel 导出 | openpyxl |
 | 配置管理 | YAML + .env |
-| 测试 | pytest (87 个测试用例) |
+| 测试 | pytest (92 个测试用例) |
 
 ## 快速开始
 
@@ -139,16 +140,17 @@ daily-record-ocr/
 │   ├── interfaces/                # Interface 层
 │   │   ├── web_routes.py          # Web 页面路由
 │   │   ├── api_routes.py          # API 路由
-│   │   ├── templates/             # Jinja2 模板（6 个页面）
+│   │   ├── templates/             # Jinja2 模板（7 个页面）
 │   │   └── static/                # CSS/JS
-│   ├── application/               # Application 层（7 个服务）
+│   ├── application/               # Application 层（8 个服务）
 │   │   ├── upload_service.py      # 图片上传
 │   │   ├── import_service.py      # 历史导入
 │   │   ├── preprocess_service.py  # 图像预处理
 │   │   ├── ocr_service.py         # OCR 识别
 │   │   ├── mimo_service.py        # MiMo 大模型
 │   │   ├── fusion_service.py      # 候选融合
-│   │   └── export_service.py      # Excel 导出
+│   │   ├── export_service.py      # Excel 导出
+│   │   └── settings_service.py    # 系统设置
 │   ├── domain/                    # Domain 层
 │   │   └── matcher.py             # 物料/客户/产品匹配器
 │   ├── infrastructure/            # Infrastructure 层
@@ -177,7 +179,16 @@ daily-record-ocr/
 
 ## 配置说明
 
+### Web 设置界面（推荐）
+
+启动服务后访问 **http://127.0.0.1:8765/settings**，可在页面上直接配置：
+- MiMo API Key、模型版本、API 地址
+- 服务地址、端口、日志级别
+- 支持 API 连接测试
+
 ### 环境变量 (.env)
+
+也可以手动编辑 `.env` 文件：
 
 ```env
 APP_HOST=127.0.0.1
