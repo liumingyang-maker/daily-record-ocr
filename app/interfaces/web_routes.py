@@ -54,6 +54,16 @@ async def import_detail_page(request: Request, batch_id: int):
     })
 
 
+@web_router.get("/settings")
+async def settings_page(request: Request):
+    from app.application.settings_service import get_settings
+    groups = get_settings()
+    return templates.TemplateResponse(request=request, name="settings.html", context={
+        "title": "系统设置",
+        "groups": groups,
+    })
+
+
 @web_router.get("/jobs/{job_id}/review")
 async def job_review_page(request: Request, job_id: int):
     from app.infrastructure.database.session import get_session

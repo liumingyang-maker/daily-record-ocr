@@ -173,3 +173,40 @@ async def export_job(job_id: int):
         return result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@api_router.get("/settings")
+async def api_get_settings():
+    from app.application.settings_service import get_settings
+    return get_settings()
+
+
+@api_router.post("/settings")
+async def api_save_settings(body: dict):
+    from app.application.settings_service import save_settings
+    save_settings(body)
+    return {"status": "ok", "message": "设置已保存"}
+
+
+@api_router.post("/settings/test-mimo")
+async def test_mimo_connection():
+    """Test MiMo API connection with current settings."""
+    from app.application.settings_service import read_env
+    env = read_env()
+    api_key = env.get("MIMO_API_KEY", "")
+    if not api_key:
+        return {"success": False, "message": "未配置 API Key"}
+
+    # If using mock client, report mock status
+    from app.infrastructure.vision import get_mimo_client
+    from app.infrastructure.vision.mock_mimo_client import MockMimoClient
+    client = get_mimo_client()
+    if isinstance(client, MockMimoClient):
+        return {"success": True, "message": "当前使用 Mock 模式（无需真实 API）"}
+
+    # Try a real connection test
+    try:
+        result = client.recognize_record("test")
+        return {"success": True, "message": f"连接成功，模型响应正常"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
