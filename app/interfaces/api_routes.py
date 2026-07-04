@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, UploadFile
 
+from app.application.preprocess_service import process
 from app.application.upload_service import create_job, get_job, list_jobs
 
 api_router = APIRouter()
@@ -49,3 +50,12 @@ async def api_get_job(job_id: int):
         "updated_at": job.updated_at.isoformat() if job.updated_at else None,
         "error_message": job.error_message,
     }
+
+
+@api_router.post("/jobs/{job_id}/preprocess")
+async def preprocess_job(job_id: int):
+    try:
+        result = process(job_id)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
