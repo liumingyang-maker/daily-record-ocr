@@ -52,6 +52,37 @@
     </div>
 </form>
 
+<div class="card" style="margin-top:24px;">
+    <h3>版本更新</h3>
+    <div id="version-info" style="margin-bottom:16px;">
+        <div style="display:flex; gap:40px; flex-wrap:wrap;">
+            <div>
+                <span style="color:#888;">当前版本：</span>
+                <strong id="local-hash">-</strong>
+                <span id="local-date" style="color:#888; margin-left:8px;">-</span>
+            </div>
+            <div>
+                <span style="color:#888;">最新版本：</span>
+                <strong id="remote-hash">-</strong>
+                <span id="remote-date" style="color:#888; margin-left:8px;">-</span>
+            </div>
+        </div>
+        <div id="update-status" style="margin-top:8px;"></div>
+    </div>
+
+    <div id="new-commits" style="display:none; margin-bottom:16px;">
+        <p style="font-weight:600; margin-bottom:8px;">更新内容：</p>
+        <div id="commits-list" style="max-height:200px; overflow-y:auto; background:#f8f8f8; padding:12px; border-radius:4px; font-family:monospace; font-size:13px;"></div>
+    </div>
+
+    <div style="display:flex; gap:12px; align-items:center;">
+        <button type="button" class="btn" onclick="checkUpdate()" id="check-btn">检查更新</button>
+        <button type="button" class="btn btn-success" onclick="doUpdate()" id="update-btn" style="display:none;">一键更新</button>
+        <span id="update-result" style="margin-left:8px;"></span>
+    </div>
+    <p style="color:#888; font-size:12px; margin-top:8px;">更新会从 GitHub 拉取最新代码并安装依赖，更新后需要重启服务。</p>
+</div>
+
 <script>
 function togglePassword(id) {
     const input = document.getElementById(id);
@@ -91,6 +122,88 @@ document.getElementById('settings-form').addEventListener('submit', async (e) =>
         result.innerHTML = '<div class="alert alert-error">保存失败: ' + err.message + '</div>';
     }
 });
+
+// Update functions
+async function checkUpdate() {
+    const btn = document.getElementById('check-btn');
+    const status = document.getElementById('update-status');
+    btn.disabled = true;
+    btn.textContent = '检查中...';
+    status.innerHTML = '<span style="color:#888">正在检查更新...</span>';
+
+    try {
+        const resp = await fetch('/api/update/check');
+        const data = await resp.json();
+
+        document.getElementById('local-hash').textContent = data.local?.hash || '-';
+        document.getElementById('local-date').textContent = data.local?.date || '';
+
+        if (data.status === 'up_to_date') {
+            document.getElementById('remote-hash').textContent = data.remote?.hash || '-';
+            document.getElementById('remote-date').textContent = data.remote?.date || '';
+            status.innerHTML = '<span style="color:green">✓ 已是最新版本</span>';
+            document.getElementById('update-btn').style.display = 'none';
+            document.getElementById('new-commits').style.display = 'none';
+        } else if (data.status === 'update_available') {
+            document.getElementById('remote-hash').textContent = data.remote?.hash || '-';
+            document.getElementById('remote-date').textContent = data.remote?.date || '';
+            status.innerHTML = '<span style="color:#d97706">⬆ ' + data.message + '</span>';
+            document.getElementById('update-btn').style.display = 'inline-block';
+
+            // Show new commits
+            if (data.new_commits && data.new_commits.length > 0) {
+                const commitsDiv = document.getElementById('new-commits');
+                const listDiv = document.getElementById('commits-list');
+                listDiv.innerHTML = data.new_commits.map(c =>
+                    '<div style="padding:2px 0;"><span style="color:#2563eb;">' + c.hash + '</span> ' + c.message + '</div>'
+                ).join('');
+                commitsDiv.style.display = 'block';
+            }
+        } else {
+            status.innerHTML = '<span style="color:red">✗ ' + data.message + '</span>';
+        }
+    } catch (err) {
+        status.innerHTML = '<span style="color:red">✗ 检查失败: ' + err.message + '</span>';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '检查更新';
+    }
+}
+
+async function doUpdate() {
+    const btn = document.getElementById('update-btn');
+    const result = document.getElementById('update-result');
+    btn.disabled = true;
+    btn.textContent = '更新中...';
+    result.innerHTML = '<span style="color:#888">正在拉取更新并安装依赖，请稍候...</span>';
+
+    try {
+        const resp = await fetch('/api/update/do', {method: 'POST'});
+        const data = await resp.json();
+
+        if (data.status === 'success') {
+            result.innerHTML = '<span style="color:green">✓ ' + data.message + '</span>';
+            btn.style.display = 'none';
+            // Refresh version info
+            if (data.local) {
+                document.getElementById('local-hash').textContent = data.local.hash || '-';
+                document.getElementById('local-date').textContent = data.local.date || '';
+            }
+        } else if (data.status === 'partial') {
+            result.innerHTML = '<span style="color:#d97706">⚠ ' + data.message + '</span>';
+        } else {
+            result.innerHTML = '<span style="color:red">✗ ' + data.message + '</span>';
+        }
+    } catch (err) {
+        result.innerHTML = '<span style="color:red">✗ 更新失败: ' + err.message + '</span>';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '一键更新';
+    }
+}
+
+// Auto-check on page load
+document.addEventListener('DOMContentLoaded', checkUpdate);
 
 async function testMimoConnection() {
     const btn = document.getElementById('test-btn');

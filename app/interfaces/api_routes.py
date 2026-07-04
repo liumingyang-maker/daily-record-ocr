@@ -207,6 +207,20 @@ async def test_mimo_connection():
     # Try a real connection test
     try:
         result = client.recognize_record("test")
-        return {"success": True, "message": f"连接成功，模型响应正常"}
+        return {"success": True, "message": "连接成功，模型响应正常"}
     except Exception as e:
         return {"success": False, "message": str(e)}
+
+
+@api_router.get("/update/check")
+async def check_update():
+    """Check if there are updates available from GitHub."""
+    from app.application.update_service import check_update
+    return check_update()
+
+
+@api_router.post("/update/do")
+async def do_update():
+    """Pull latest changes and install dependencies."""
+    from app.application.update_service import do_update
+    return do_update()
