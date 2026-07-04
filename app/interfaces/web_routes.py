@@ -42,3 +42,13 @@ async def history_import_page(request: Request):
         "batches": batches,
         "profiles": profiles,
     })
+
+
+@web_router.get("/history-import/{batch_id}")
+async def import_detail_page(request: Request, batch_id: int):
+    batch = import_service.get_batch(batch_id)
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    return templates.TemplateResponse(request=request, name="import_detail.html", context={
+        "request": request, "title": f"导入详情 - {batch.batch_no}", "batch": batch,
+    })

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>导入详情 - {{ batch.batch_no }}</h1>
+    <a href="/history-import" class="btn">返回列表</a>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <h2>批次信息</h2>
+    <table>
+        <tr>
+            <th>批次编号</th>
+            <td>{{ batch.batch_no }}</td>
+        </tr>
+        <tr>
+            <th>源文件</th>
+            <td>{{ batch.source_file_name or '-' }}</td>
+        </tr>
+        <tr>
+            <th>导入配置</th>
+            <td>{{ batch.import_profile }}</td>
+        </tr>
+        <tr>
+            <th>状态</th>
+            <td><span class="status status-{{ batch.status|lower }}">{{ batch.status }}</span></td>
+        </tr>
+        <tr>
+            <th>总行数</th>
+            <td>{{ batch.total_rows or '-' }}</td>
+        </tr>
+        <tr>
+            <th>有效行数</th>
+            <td>{{ batch.valid_rows or '-' }}</td>
+        </tr>
+        <tr>
+            <th>无效行数</th>
+            <td>{{ batch.invalid_rows or '-' }}</td>
+        </tr>
+        <tr>
+            <th>创建时间</th>
+            <td>{{ batch.created_at.strftime('%Y-%m-%d %H:%M:%S') if batch.created_at else '-' }}</td>
+        </tr>
+        <tr>
+            <th>确认时间</th>
+            <td>{{ batch.confirmed_at.strftime('%Y-%m-%d %H:%M:%S') if batch.confirmed_at else '-' }}</td>
+        </tr>
+    </table>
+
+    {% if batch.status == 'PARSED' %}
+    <div style="margin-top: 1rem;">
+        <button id="confirm-btn" onclick="confirmImport()">确认导入</button>
+        <span id="confirm-result" style="margin-left: 1rem;"></span>
+    </div>
+    {% endif %}
+</div>
+
+<h2>暂存记录</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>序号</th>
+            <th>日期</th>
+            <th>客户</th>
+            <th>产品</th>
+            <th>物料</th>
+            <th>用量</th>
+            <th>单位</th>
+            <th>有效</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for rec in batch.staging_records %}
+        {% set p = rec.normalized_payload_json or rec.raw_payload_json or {} %}
+        <tr>
+            <td>{{ rec.record_index + 1 }}</td>
+            <td>{{ p.get('date', '-') }}</td>
+            <td>{{ p.get('customer', '-') }}</td>
+            <td>{{ p.get('product', '-') }}</td>
+            <td>{{ p.get('material_name', '-') }}</td>
+            <td>{{ p.get('usage', '-') }}</td>
+            <td>{{ p.get('unit', '-') }}</td>
+            <td>{{ '是' if rec.is_valid else '否' }}</td>
+        </tr>
+        {% endfor %}
+        {% if not batch.staging_records %}
+        <tr>
+            <td colspan="8" style="text-align: center; color: #999;">暂无记录</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<script>
+async function confirmImport() {
+    const btn = document.getElementById('confirm-btn');
+    const resultEl = document.getElementById('confirm-result');
+    btn.disabled = true;
+    resultEl.textContent = '处理中...';
+    resultEl.style.color = '#666';
+    try {
+        const resp = await fetch('/api/import/batches/{{ batch.id }}/confirm', { method: 'POST' });
+        if (resp.ok) {
+            const data = await resp.json();
+            resultEl.textContent = '导入成功: ' + data.batch_no;
+            resultEl.style.color = 'green';
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            const data = await resp.json();
+            resultEl.textContent = '导入失败: ' + (data.detail || '未知错误');
+            resultEl.style.color = 'red';
+            btn.disabled = false;
+        }
+    } catch (err) {
+        resultEl.textContent = '导入失败: ' + err.message;
+        resultEl.style.color = 'red';
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

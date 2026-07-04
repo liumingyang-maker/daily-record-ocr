@@ -92,3 +92,12 @@ async def get_import_batch(batch_id: int):
             for r in batch.staging_records
         ],
     }
+
+
+@import_router.post("/batches/{batch_id}/confirm")
+async def confirm_import(batch_id: int):
+    try:
+        batch = import_service.confirm_and_import(batch_id)
+        return {"batch_id": batch.id, "batch_no": batch.batch_no, "status": batch.status}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

@@ -51,7 +51,7 @@
             <td><span class="status status-{{ batch.status|lower }}">{{ batch.status }}</span></td>
             <td>{{ batch.total_rows or '-' }}</td>
             <td>{{ batch.created_at.strftime('%Y-%m-%d %H:%M') if batch.created_at else '-' }}</td>
-            <td><a href="/api/import/batches/{{ batch.id }}">详情</a></td>
+            <td><a href="/history-import/{{ batch.id }}">详情</a></td>
         </tr>
         {% endfor %}
         {% if not batches %}

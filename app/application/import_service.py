@@ -88,6 +88,10 @@ class ImportService:
             batch = session.get(ImportBatch, batch_id)
             if batch:
                 session.refresh(batch)
+                # Touch staging records so they're loaded before expunging
+                _ = batch.staging_records
+                for rec in batch.staging_records:
+                    session.expunge(rec)
                 session.expunge(batch)
             return batch
 
