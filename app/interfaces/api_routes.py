@@ -98,3 +98,65 @@ async def fuse_job(job_id: int):
         return result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@api_router.patch("/fields/{field_id}")
+async def update_field(field_id: int, body: dict):
+    from app.infrastructure.database.session import get_session
+    from app.infrastructure.database.models import FieldRecognitionResult, ManualCorrectionLog
+
+    final_value = body.get("final_value")
+    if final_value is None:
+        raise HTTPException(status_code=400, detail="final_value is required")
+
+    with get_session() as session:
+        field = session.get(FieldRecognitionResult, field_id)
+        if not field:
+            raise HTTPException(status_code=404, detail="Field not found")
+
+        old_value = field.final_value
+        field.final_value = final_value
+        field.manual_corrected = True
+
+        log = ManualCorrectionLog(
+            record_id=field.record_id,
+            field_key=field.field_key,
+            old_value=old_value,
+            new_value=final_value,
+            correction_type="OTHER",
+        )
+        session.add(log)
+        session.flush()
+
+        return {
+            "field_id": field.id,
+            "final_value": field.final_value,
+            "manual_corrected": field.manual_corrected,
+            "log_id": log.id,
+        }
+
+
+@api_router.post("/jobs/{job_id}/confirm")
+async def confirm_job(job_id: int):
+    from app.infrastructure.database.session import get_session
+    from app.infrastructure.database.models import RecognitionJob
+
+    with get_session() as session:
+        job = session.get(RecognitionJob, job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+
+        if job.status not in ("NEED_REVIEW", "RECOGNIZED"):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot confirm job with status {job.status}",
+            )
+
+        job.status = "CONFIRMED"
+        session.flush()
+
+        return {
+            "job_id": job.id,
+            "job_no": job.job_no,
+            "status": job.status,
+        }

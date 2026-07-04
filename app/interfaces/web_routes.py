@@ -52,3 +52,37 @@ async def import_detail_page(request: Request, batch_id: int):
     return templates.TemplateResponse(request=request, name="import_detail.html", context={
         "request": request, "title": f"导入详情 - {batch.batch_no}", "batch": batch,
     })
+
+
+@web_router.get("/jobs/{job_id}/review")
+async def job_review_page(request: Request, job_id: int):
+    from app.infrastructure.database.session import get_session
+    from app.infrastructure.database.models import RecognitionJob, ProductionRecord, FieldRecognitionResult, FieldCandidate
+
+    with get_session() as session:
+        job = session.get(RecognitionJob, job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+
+        records = session.query(ProductionRecord).filter(ProductionRecord.job_id == job_id).order_by(ProductionRecord.record_index).all()
+        field_results = session.query(FieldRecognitionResult).filter(FieldRecognitionResult.job_id == job_id).all()
+        candidates = session.query(FieldCandidate).filter(FieldCandidate.field_result_id.in_([f.id for f in field_results])).all()
+
+        # Build candidate map: field_result_id -> list of candidates
+        candidate_map = {}
+        for c in candidates:
+            candidate_map.setdefault(c.field_result_id, []).append(c)
+
+        # Build field map: record_id -> list of field results
+        field_map = {}
+        for f in field_results:
+            field_map.setdefault(f.record_id, []).append(f)
+
+    return templates.TemplateResponse(request=request, name="job_review.html", context={
+        "request": request,
+        "title": f"人工确认 - {job.job_no}",
+        "job": job,
+        "records": records,
+        "field_map": field_map,
+        "candidate_map": candidate_map,
+    })

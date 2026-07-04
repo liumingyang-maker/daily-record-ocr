@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>人工确认 - {{ job.job_no }}</h1>
+    <a href="/jobs/{{ job.id }}" class="btn">返回详情</a>
+</div>
+
+<div class="review-info">
+    <p>任务状态: <span class="status status-{{ job.status|lower }}">{{ job.status }}</span></p>
+    <p>共 {{ records|length }} 条记录，{{ field_map|length }} 个字段需要确认</p>
+</div>
+
+<div class="records-container">
+    {% for record in records %}
+    <div class="record-card">
+        <h3>记录 #{{ record.record_index or loop.index }}</h3>
+        <div class="record-meta">
+            {% if record.time_value %}
+            <span>时间: {{ record.time_value }}</span>
+            {% endif %}
+            {% if record.customer %}
+            <span>客户: {{ record.customer.customer_name }}</span>
+            {% endif %}
+            {% if record.product %}
+            <span>产品: {{ record.product.product_name }}</span>
+            {% endif %}
+        </div>
+
+        <div class="fields-grid">
+            {% for field in field_map.get(record.id, []) %}
+            <div class="field-item" data-field-id="{{ field.id }}">
+                <div class="field-header">
+                    <label>{{ field.field_label or field.field_key }}</label>
+                    {% if field.final_confidence is not none %}
+                    <span class="confidence-badge 
+                        {% if field.final_confidence >= 0.95 %}confidence-high
+                        {% elif field.final_confidence >= 0.80 %}confidence-medium
+                        {% else %}confidence-low{% endif %}">
+                        {{ "%.1f"|format(field.final_confidence * 100) }}%
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="field-input-group">
+                    <input type="text" 
+                           class="field-input" 
+                           id="field-{{ field.id }}" 
+                           value="{{ field.final_value or '' }}"
+                           data-original="{{ field.final_value or '' }}">
+                    <button class="btn btn-save" onclick="saveField({{ field.id }})">保存</button>
+                </div>
+
+                {% if field.ocr_raw_text %}
+                <div class="field-source">
+                    <small>OCR: {{ field.ocr_raw_text }}{% if field.ocr_confidence %} ({{ "%.1f"|format(field.ocr_confidence * 100) }}%){% endif %}</small>
+                </div>
+                {% endif %}
+
+                {% if field.mimo_raw_text %}
+                <div class="field-source">
+                    <small>MiMo: {{ field.mimo_raw_text }}{% if field.mimo_confidence %} ({{ "%.1f"|format(field.mimo_confidence * 100) }}%){% endif %}</small>
+                </div>
+                {% endif %}
+
+                {% if candidate_map.get(field.id) %}
+                <div class="candidates">
+                    <small>候选值:</small>
+                    {% for candidate in candidate_map[field.id] %}
+                    <span class="candidate-tag" 
+                          onclick="selectCandidate({{ field.id }}, '{{ candidate.candidate_value|e }}')"
+                          title="{{ candidate.source }}: {{ "%.1f"|format((candidate.confidence or 0) * 100) }}%">
+                        {{ candidate.candidate_value }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if field.manual_corrected %}
+                <div class="field-corrected">
+                    <small>已手动修正</small>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="review-actions">
+    <button class="btn btn-primary btn-confirm-all" onclick="confirmAll({{ job.id }})">
+        确认全部
+    </button>
+    <span id="confirm-status"></span>
+</div>
+
+<script>
+function selectCandidate(fieldId, value) {
+    const input = document.getElementById('field-' + fieldId);
+    if (input) {
+        input.value = value;
+    }
+}
+
+async function saveField(fieldId) {
+    const input = document.getElementById('field-' + fieldId);
+    const value = input.value;
+    
+    try {
+        const resp = await fetch('/api/fields/' + fieldId, {
+            method: 'PATCH',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({final_value: value})
+        });
+        
+        if (resp.ok) {
+            const data = await resp.json();
+            input.dataset.original = value;
+            
+            const fieldItem = input.closest('.field-item');
+            let correctedBadge = fieldItem.querySelector('.field-corrected');
+            if (!correctedBadge) {
+                correctedBadge = document.createElement('div');
+                correctedBadge.className = 'field-corrected';
+                correctedBadge.innerHTML = '<small>已手动修正</small>';
+                fieldItem.appendChild(correctedBadge);
+            }
+            
+            alert('保存成功');
+        } else {
+            const err = await resp.json();
+            alert('保存失败: ' + (err.detail || '未知错误'));
+        }
+    } catch (e) {
+        alert('保存失败: ' + e.message);
+    }
+}
+
+async function confirmAll(jobId) {
+    const statusEl = document.getElementById('confirm-status');
+    statusEl.textContent = '确认中...';
+    
+    try {
+        const resp = await fetch('/api/jobs/' + jobId + '/confirm', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        
+        if (resp.ok) {
+            const data = await resp.json();
+            statusEl.textContent = '确认成功！状态已更新为: ' + data.status;
+            statusEl.style.color = 'green';
+            
+            setTimeout(() => {
+                window.location.href = '/jobs/' + jobId;
+            }, 1500);
+        } else {
+            const err = await resp.json();
+            statusEl.textContent = '确认失败: ' + (err.detail || '未知错误');
+            statusEl.style.color = 'red';
+        }
+    } catch (e) {
+        statusEl.textContent = '确认失败: ' + e.message;
+        statusEl.style.color = 'red';
+    }
+}
+</script>
+
+<style>
+.review-info {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.record-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.record-card h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.record-meta {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+    color: #666;
+}
+
+.fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.field-item {
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.field-header label {
+    font-weight: bold;
+    margin: 0;
+}
+
+.confidence-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.confidence-high {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.confidence-medium {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.confidence-low {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.field-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.field-input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn-save {
+    padding: 8px 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-save:hover {
+    background-color: #218838;
+}
+
+.field-source {
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.candidates {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+}
+
+.candidate-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.candidate-tag:hover {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.field-corrected {
+    margin-top: 5px;
+}
+
+.field-corrected small {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.review-actions {
+    text-align: center;
+    padding: 30px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    margin-top: 20px;
+}
+
+.btn-confirm-all {
+    padding: 15px 40px;
+    font-size: 18px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-confirm-all:hover {
+    background-color: #0056b3;
+}
+
+#confirm-status {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
