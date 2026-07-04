@@ -51,7 +51,7 @@ def test_parse_csv(csv_file, profile):
     assert len(rows) == 2
     assert rows[0]["date"] == "2025-01-01"
     assert rows[0]["customer"] == "客户A"
-    assert rows[0]["usage"] == "10.5"
+    assert rows[0]["usage"] == 10.5
     assert rows[0]["_source_row"] == 2
 
 

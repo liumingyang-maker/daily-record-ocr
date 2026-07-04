@@ -19,16 +19,30 @@ def _is_empty_row(row) -> bool:
     return all(cell is None or str(cell).strip() == "" for cell in row)
 
 
+def _coerce_value(value, col_type: str):
+    """Normalize values so CSV (all strings) and xlsx (native types) return consistent types."""
+    if value is None:
+        return None
+    s = str(value).strip()
+    if not s:
+        return None
+    if col_type == "float":
+        try:
+            return float(s.replace(",", ""))
+        except ValueError:
+            return s
+    return s
+
+
 def _map_row(raw_row: list, column_map: dict, columns: dict, source_row: int) -> dict:
     result = {"_source_row": source_row}
     for col_key, col_def in columns.items():
         idx = column_map.get(col_key)
-        value = raw_row[idx] if idx is not None and idx < len(raw_row) else None
-        if value is None or str(value).strip() == "":
-            if "default" in col_def:
-                value = col_def["default"]
-            else:
-                value = None
+        raw = raw_row[idx] if idx is not None and idx < len(raw_row) else None
+        col_type = col_def.get("type", "string")
+        value = _coerce_value(raw, col_type)
+        if value is None and "default" in col_def:
+            value = col_def["default"]
         result[col_key] = value
     return result
 
@@ -59,7 +73,7 @@ def parse_xlsx(file_path: str, profile: dict) -> list[dict]:
 
 def parse_csv(file_path: str, profile: dict) -> list[dict]:
     skip_rows = profile.get("skip_rows", 0)
-    with open(file_path, encoding="utf-8", newline="") as f:
+    with open(file_path, encoding="utf-8-sig", newline="") as f:
         reader = csv.reader(f)
         headers = None
         column_map = {}
