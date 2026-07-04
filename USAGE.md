@@ -191,7 +191,26 @@ python3 -m app.main            # macOS/Linux
 
 ## 4. 配置说明
 
-### 4.1 模板坐标配置
+### 4.1 Web 设置界面（推荐）
+
+启动服务后，点击导航栏「设置」或访问 http://127.0.0.1:8765/settings
+
+可配置的项目：
+
+| 分组 | 设置项 | 说明 |
+|------|--------|------|
+| MiMo API | API Key | MiMo 视觉大模型密钥 |
+| MiMo API | 模型版本 | 使用的模型（默认 mimo-v2.5） |
+| MiMo API | API 地址 | 自定义 API 端点（可选） |
+| 应用设置 | 服务地址 | Web 服务监听地址 |
+| 应用设置 | 服务端口 | Web 服务端口 |
+| 应用设置 | 日志级别 | DEBUG/INFO/WARNING/ERROR |
+
+页面还提供「测试连接」功能，可检测 MiMo API 是否可用。
+
+保存后部分设置（如端口）需要重启服务生效。
+
+### 4.2 模板坐标配置
 
 文件：`app/configs/template_daily_record_v1.yaml`
 
@@ -206,7 +225,7 @@ template:
       roi_in_record: [100, 310, 300, 360]
 ```
 
-### 4.2 OCR 配置
+### 4.3 OCR 配置
 
 文件：`app/configs/ocr.yaml`
 
@@ -216,7 +235,7 @@ ocr:
   confidence_threshold: 0.6  # 置信度阈值
 ```
 
-### 4.3 MiMo API 配置
+### 4.4 MiMo API 配置
 
 文件：`app/configs/mimo.yaml`
 
@@ -235,13 +254,13 @@ mimo:
 MIMO_API_KEY=your_api_key_here
 ```
 
-### 4.4 单位规则
+### 4.5 单位规则
 
 文件：`app/configs/unit_rules.yaml`
 
 定义可换算单位（g→kg→t）和不可换算单位（包、袋、桶、份）。
 
-### 4.5 导入配置
+### 4.6 导入配置
 
 文件：`app/configs/import_profiles.yaml`
 
