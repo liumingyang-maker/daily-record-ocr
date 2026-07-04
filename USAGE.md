@@ -68,18 +68,23 @@ launcher\run.bat
 #### 方式二：手动安装
 
 ```bash
-# 1. 创建虚拟环境
-python -m venv .venv
+# 1. 克隆项目
+git clone https://github.com/liumingyang-maker/daily-record-ocr.git
+cd daily-record-ocr
 
-# 2. 激活虚拟环境
+# 2. 创建虚拟环境
+python3 -m venv .venv
+
+# 3. 激活虚拟环境
 source .venv/bin/activate      # macOS/Linux
 # .venv\Scripts\activate       # Windows
 
-# 3. 安装依赖
+# 4. 安装依赖
 pip install -r requirements.txt
 
-# 4. 启动服务
-python -m app.main
+# 5. 启动服务
+python3 -m app.main            # macOS/Linux
+# python -m app.main           # Windows
 ```
 
 ### 2.3 访问系统
