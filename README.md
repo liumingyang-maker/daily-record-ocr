@@ -135,6 +135,9 @@ launcher\run.bat
 **方式一：命令行更新（推荐）**
 
 ```bash
+# 进入项目目录
+cd daily-record-ocr
+
 # macOS / Linux
 ./launcher/update.sh
 
@@ -143,6 +146,8 @@ launcher\update.bat
 ```
 
 脚本会自动检查远程更新、显示更新内容、确认后拉取代码并安装依赖。
+
+> 如果安装在家目录，完整路径为 `~/daily-record-ocr/launcher/update.sh`
 
 **方式二：Web 页面更新**
 

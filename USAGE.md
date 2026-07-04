@@ -91,6 +91,40 @@ python3 -m app.main            # macOS/Linux
 
 启动成功后，浏览器访问：**http://127.0.0.1:8765**
 
+### 2.4 更新到最新版本
+
+#### 命令行更新（推荐）
+
+```bash
+# 进入项目目录
+cd daily-record-ocr
+
+# macOS / Linux
+./launcher/update.sh
+
+# Windows
+launcher\update.bat
+```
+
+脚本会自动检查远程更新、显示新版本内容，确认后拉取代码并安装依赖。
+
+> 如果安装在家目录，完整路径为 `~/daily-record-ocr/launcher/update.sh`
+
+#### Web 页面更新
+
+启动服务后访问 http://127.0.0.1:8765/settings，找到「版本更新」区域：
+1. 点击「检查更新」
+2. 查看新版本的更新内容
+3. 点击「一键更新」
+
+#### 手动更新
+
+```bash
+cd daily-record-ocr
+git pull
+pip install -r requirements.txt
+```
+
 ---
 
 ## 3. 功能操作指南
