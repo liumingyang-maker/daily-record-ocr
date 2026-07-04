@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, UploadFile
 
+from app.application.mimo_service import MimoService
 from app.application.ocr_service import OcrService
 from app.application.preprocess_service import process
 from app.application.upload_service import create_job, get_job, list_jobs
@@ -69,6 +70,18 @@ ocr_service = OcrService()
 async def recognize_job(job_id: int):
     try:
         result = ocr_service.recognize_job(job_id)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+mimo_service = MimoService()
+
+
+@api_router.post("/jobs/{job_id}/mimo")
+async def mimo_recognize_job(job_id: int):
+    try:
+        result = mimo_service.recognize_job(job_id)
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
