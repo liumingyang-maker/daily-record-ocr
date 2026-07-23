@@ -1,0 +1,90 @@
+excel:
+  # 填入已有 xlsx 路径即可把结果写入固定模板；留空时自动创建工作簿。
+  template_path: ""
+  keep_vba: false
+  output_name: "recognized-{job_id}.xlsx"
+
+  # 固定单元格映射。使用已有模板时可继续添加。
+  cells:
+    - sheet: 记录汇总
+      cell: B1
+      value: "$root.page_heading"
+
+  # 表格映射同样可写入已有模板。source 是顶层数组，expand 是其子数组。
+  tables:
+    - sheet: 记录汇总
+      source: records
+      start_row: 3
+      include_header: true
+      columns:
+        - column: A
+          header: 记录序号
+          value: "$index"
+        - column: B
+          header: 日期
+          value: record_date
+        - column: C
+          header: 配方/产品
+          value: title
+        - column: D
+          header: 备注
+          value: notes
+        - column: E
+          header: 整体置信度
+          value: confidence
+
+    - sheet: 配方明细
+      source: records
+      expand: materials
+      start_row: 1
+      include_header: true
+      columns:
+        - column: A
+          header: 记录序号
+          value: "$parent_index"
+        - column: B
+          header: 日期
+          value: "$parent.record_date"
+        - column: C
+          header: 配方/产品
+          value: "$parent.title"
+        - column: D
+          header: 原料名称
+          value: name
+        - column: E
+          header: 数量
+          value: amount
+        - column: F
+          header: 单位
+          value: unit
+        - column: G
+          header: 置信度
+          value: confidence
+
+    - sheet: 工艺参数
+      source: records
+      expand: process_parameters
+      start_row: 1
+      include_header: true
+      columns:
+        - column: A
+          header: 记录序号
+          value: "$parent_index"
+        - column: B
+          header: 日期
+          value: "$parent.record_date"
+        - column: C
+          header: 配方/产品
+          value: "$parent.title"
+        - column: D
+          header: 参数名称
+          value: name
+        - column: E
+          header: 参数值
+          value: value
+        - column: F
+          header: 单位
+          value: unit
+        - column: G
+          header: 置信度
+          value: confidence
