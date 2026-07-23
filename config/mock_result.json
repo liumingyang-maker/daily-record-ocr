@@ -1,0 +1,20 @@
+{
+  "page_heading": "示例",
+  "records": [
+    {
+      "record_date": "24.7.10",
+      "title": "PA66GF30（示例）",
+      "materials": [
+        {"name": "PA66", "amount": "60", "unit": "", "confidence": 0.97},
+        {"name": "玻纤", "amount": "30", "unit": "", "confidence": 0.92}
+      ],
+      "process_parameters": [
+        {"name": "主机", "value": "50", "unit": "", "confidence": 0.9}
+      ],
+      "notes": "mock 结果，用于确认界面和导出流程。",
+      "confidence": 0.9,
+      "warnings": []
+    }
+  ],
+  "warnings": []
+}

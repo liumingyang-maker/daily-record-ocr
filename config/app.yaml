@@ -1,0 +1,30 @@
+app:
+  host: "${APP_HOST:-127.0.0.1}"
+  port: "${APP_PORT:-8765}"
+  jobs_dir: "${JOBS_DIR:-data/jobs}"
+  max_upload_mb: 20
+
+preprocess:
+  max_side: 2048
+  jpeg_quality: 90
+  auto_rotate_portrait_to_landscape: true
+  auto_landscape_direction: ccw90
+
+vision:
+  # mock 可直接体验；连接任意 OpenAI-compatible 视觉模型时改为 openai_compatible。
+  provider: "${VISION_PROVIDER:-mock}"
+  base_url: "${VISION_BASE_URL:-http://127.0.0.1:11434/v1}"
+  endpoint: "${VISION_ENDPOINT:-/chat/completions}"
+  api_key: "${VISION_API_KEY:-}"
+  model: "${VISION_MODEL:-qwen2.5-vl:7b}"
+  timeout_seconds: 120
+  temperature: 0
+  image_detail: high
+  # 只有服务端明确支持 OpenAI JSON Schema response_format 时才开启。
+  use_json_schema: false
+  mock_result: config/mock_result.json
+  extra_headers: {}
+  extra_body: {}
+
+schema_file: config/record_schema.yaml
+export_file: config/export.yaml

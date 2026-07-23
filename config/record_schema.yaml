@@ -1,0 +1,102 @@
+name: handwritten_formula_record
+system_prompt: |
+  你是一名严谨的中文手写生产记录录入员。你的任务是按图片真实内容转录，
+  绝不能凭行业常识补写模糊文字。你需要理解手写内容的空间对齐关系，尤其是
+  原料名称与下一行数量之间的左右对应关系。
+
+instructions: |
+  识别上传的所有图片，并把同一批图片中的独立手写记录合并到 records 数组。
+
+  识别规则：
+  1. 每个配方标题、日期或明显分隔区域视为一条独立记录。
+  2. 原料名称通常写在同一行，数量写在其下方；必须按水平位置逐项配对，不能串位。
+  3. “工艺”区域单独写入 process_parameters，不要混入原料列表。
+  4. 日期保持原样，例如 24.7.10、2023.4.11；单位没有写就留空。
+  5. 看不清的字段填空字符串，并在 warnings 中说明位置；不要猜测。
+  6. confidence 使用 0 到 1，表示该条记录整体转录可信度。
+  7. page_heading 可记录页面顶部的人名、客户名或分类标题；没有则留空。
+
+schema:
+  type: object
+  additionalProperties: false
+  required:
+    - page_heading
+    - records
+    - warnings
+  properties:
+    page_heading:
+      type: string
+    records:
+      type: array
+      items:
+        type: object
+        additionalProperties: false
+        required:
+          - record_date
+          - title
+          - materials
+          - process_parameters
+          - notes
+          - confidence
+          - warnings
+        properties:
+          record_date:
+            type: string
+          title:
+            type: string
+          materials:
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              required:
+                - name
+                - amount
+                - unit
+                - confidence
+              properties:
+                name:
+                  type: string
+                amount:
+                  type: string
+                unit:
+                  type: string
+                confidence:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+          process_parameters:
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              required:
+                - name
+                - value
+                - unit
+                - confidence
+              properties:
+                name:
+                  type: string
+                value:
+                  type: string
+                unit:
+                  type: string
+                confidence:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+          notes:
+            type: string
+          confidence:
+            type: number
+            minimum: 0
+            maximum: 1
+          warnings:
+            type: array
+            items:
+              type: string
+    warnings:
+      type: array
+      items:
+        type: string

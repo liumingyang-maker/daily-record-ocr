@@ -1,33 +1,9 @@
-# Core application
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-jinja2>=3.1.2
-python-multipart>=0.0.6
-
-# Database
-sqlalchemy>=2.0.23
-alembic>=1.13.0
-
-# Configuration
-pyyaml>=6.0.1
-python-dotenv>=1.0.0
-
-# Logging
-loguru>=0.7.2
-
-# Excel
-openpyxl>=3.1.2
-
-# HTTP client
-httpx>=0.25.0
-
-# OCR (optional)
-paddleocr>=2.7.0
-
-# Vision (optional)
-opencv-python>=4.8.0
-opencv-python-headless>=4.8.0
-
-# Dev dependencies
-pytest>=7.4.3
-pytest-asyncio>=0.23.0
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
+jinja2>=3.1,<4
+python-multipart>=0.0.9,<1
+httpx>=0.27,<1
+pyyaml>=6,<7
+pillow>=10,<12
+openpyxl>=3.1,<4
+jsonschema>=4.22,<5
