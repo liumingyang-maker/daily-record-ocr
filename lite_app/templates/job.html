@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ job.id }} - 手写记录识别工具{% endblock %}
+{% block content %}
+<div class="page-title">
+    <div>
+        <p class="eyebrow">识别任务</p>
+        <h1>{{ job.id }}</h1>
+    </div>
+    <span class="status status-{{ job.status|lower }}">{{ job.status }}</span>
+</div>
+
+{% if job.error %}
+<div class="alert error"><strong>识别失败：</strong>{{ job.error }}</div>
+{% endif %}
+{% if job.validation_errors %}
+<div class="alert warning">
+    <strong>Schema 校验提示：</strong>
+    <ul>{% for error in job.validation_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<div class="job-layout">
+    <section class="panel">
+        <h2>图片</h2>
+        <div class="image-grid">
+        {% for image in job.images %}
+            <figure>
+                <img src="/jobs/{{ job.id }}/images/{{ image.prepared or image.source }}" alt="{{ image.original_name }}">
+                <figcaption>{{ image.original_name }}</figcaption>
+            </figure>
+        {% endfor %}
+        </div>
+        <form action="/jobs/{{ job.id }}/recognize" method="post">
+            <button type="submit" class="secondary">按当前配置重新识别</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="section-heading">
+            <h2>结构化结果</h2>
+            <div class="actions-inline">
+                <a href="/jobs/{{ job.id }}/result.json">下载 JSON</a>
+                <a class="button-link" href="/jobs/{{ job.id }}/export">导出 Excel</a>
+            </div>
+        </div>
+        <form action="/jobs/{{ job.id }}/save" method="post">
+            <textarea name="result_json" spellcheck="false">{{ result_text }}</textarea>
+            <div class="form-actions">
+                <button type="submit">保存人工修正</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}
