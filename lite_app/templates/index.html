@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}上传识别 - 手写记录识别工具{% endblock %}
+{% block content %}
+<section class="hero">
+    <div>
+        <p class="eyebrow">轻量 · 单机 · 可换模型</p>
+        <h1>手写图片 → 结构化 JSON → 固定 Excel</h1>
+        <p class="lead">整张图片交给视觉模型理解，不再依赖固定坐标切格。多张图片可一次上传并合并为同一份记录。</p>
+    </div>
+    <div class="provider-card">
+        <span>当前模型</span>
+        <strong>{{ provider }}</strong>
+        <code>{{ model or "未指定" }}</code>
+    </div>
+</section>
+
+<section class="panel">
+    <h2>新建识别任务</h2>
+    <form action="/jobs" method="post" enctype="multipart/form-data" class="upload-form">
+        <label>
+            <span>选择图片（可多选，单张不超过 {{ max_upload_mb }} MB）</span>
+            <input type="file" name="files" accept="image/*" multiple required>
+        </label>
+        <label>
+            <span>图片方向</span>
+            <select name="rotation">
+                <option value="auto">自动：竖图逆时针转为横图</option>
+                <option value="none">不旋转</option>
+                <option value="ccw90">逆时针 90°</option>
+                <option value="cw90">顺时针 90°</option>
+                <option value="180">旋转 180°</option>
+            </select>
+        </label>
+        <button type="submit">上传并识别</button>
+    </form>
+    <p class="hint">首次试运行默认使用 mock。把 <code>.env.example</code> 复制为 <code>.env</code>，配置视觉模型后重启即可。</p>
+</section>
+
+<section class="panel">
+    <div class="section-heading">
+        <h2>最近任务</h2>
+        <span>{{ jobs|length }} 条</span>
+    </div>
+    {% if jobs %}
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>任务</th><th>状态</th><th>模型</th><th>创建时间</th><th></th></tr></thead>
+            <tbody>
+            {% for job in jobs %}
+                <tr>
+                    <td><code>{{ job.id }}</code></td>
+                    <td><span class="status status-{{ job.status|lower }}">{{ job.status }}</span></td>
+                    <td>{{ job.provider or "-" }} / {{ job.model or "-" }}</td>
+                    <td>{{ job.created_at }}</td>
+                    <td><a href="/jobs/{{ job.id }}">打开</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty">还没有任务。</p>
+    {% endif %}
+</section>
+{% endblock %}
