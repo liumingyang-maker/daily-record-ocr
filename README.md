@@ -1,336 +1,217 @@
-# 每日生产记录智能识别系统
+# 手写生产记录识别工具（轻量版）
 
-基于 OCR + 视觉大模型的手写生产记录自动识别系统。
+把手机拍摄的手写笔记交给任意视觉模型，得到可人工修正的结构化 JSON，再写入固定 Excel 文档。
 
-> 上传手写表格图片 → 自动识别 → 人工确认 → 导出 Excel
+> 默认流程：多图上传 → 自动旋转/缩放 → 整图视觉理解 → JSON Schema 校验 → 浏览器人工确认 → Excel 模板映射
 
-## 功能特性
+## 为什么改成轻量版
 
-| 功能 | 说明 |
-|------|------|
-| 图片识别 | 上传手写生产记录图片，自动校正、切格、OCR 识别、MiMo 大模型复核 |
-| 历史导入 | 支持 xlsx/csv 格式的历史电子记录导入，自动提取客户/产品/物料/配方库 |
-| 候选融合 | 多来源（OCR、MiMo、历史库、物料字典）候选结果自动融合排序 |
-| 人工确认 | 可视化确认页面，支持字段编辑、候选选择、修正日志 |
-| Excel 导出 | 一键导出 4 个 Sheet（记录汇总、配方明细、识别审查、修正摘要） |
-| 后台设置 | Web 界面配置 API Key、模型参数、服务端口等，无需手动编辑文件 |
-| 一键更新 | 设置页面检查更新、查看更新日志、一键拉取最新版本 |
-| 跨平台 | 支持 Windows、macOS、Linux |
+原实现针对“固定印刷表格”设计：先把图片统一缩放，再按固定坐标切出 3 个记录区和多个字段小格，随后分别调用 OCR 和 MiMo。你提供的实际图片是自由排版的横线笔记，原料名、数量和“工艺”区域依靠空间关系对应，固定坐标切格很容易把内容切错，也会丢掉上下文。
 
-## 系统架构
+轻量版做了这些取舍：
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Interface 层                          │
-│   Web 页面 (Jinja2)    API 路由 (FastAPI)               │
-├─────────────────────────────────────────────────────────┤
-│                   Application 层                         │
-│   上传服务 │ 导入服务 │ 预处理 │ OCR │ MiMo │ 融合 │ 导出 │
-├─────────────────────────────────────────────────────────┤
-│                    Domain 层                             │
-│              物料匹配器 │ 客户匹配器                      │
-├─────────────────────────────────────────────────────────┤
-│                 Infrastructure 层                        │
-│   OpenCV │ PaddleOCR │ MiMo API │ SQLite │ openpyxl     │
-├─────────────────────────────────────────────────────────┤
-│                    Config 层                             │
-│        模板坐标 │ 字段规则 │ OCR/MiMo 参数 │ 导入配置      │
-└─────────────────────────────────────────────────────────┘
-```
-
-## 核心流程
-
-```
-图片上传
-   ↓
-图像校正（旋转、对比度增强、缩放）
-   ↓
-模板切格（按 YAML 坐标切割 3 条记录区域）
-   ↓
-字段切割（每条记录切分时间、客户、物料等字段小格子）
-   ↓
-OCR 识别（单格文字识别）
-   ↓
-MiMo 大模型复核（整条记录级识别）
-   ↓
-历史匹配（与知识库比对）
-   ↓
-候选融合（多来源排序，置信度分级）
-   ↓
-人工确认（可视化编辑，修正日志）
-   ↓
-Excel 导出（4 个 Sheet）
-```
-
-## 技术栈
-
-| 组件 | 技术 |
-|------|------|
-| 后端框架 | FastAPI + Jinja2 |
-| 数据库 | SQLite + SQLAlchemy ORM |
-| 图像处理 | OpenCV |
-| OCR 引擎 | PaddleOCR（可替换为其他引擎） |
-| 视觉大模型 | MiMo API（可替换为其他模型） |
-| Excel 导出 | openpyxl |
-| 配置管理 | YAML + .env |
-| 测试 | pytest (97 个测试用例) |
-
-## 快速开始
-
-### 环境要求
-
-- Python 3.11+
-- pip
-
-### 安装运行
-
-**macOS / Linux：**
-
-```bash
-# 克隆项目
-git clone https://github.com/liumingyang-maker/daily-record-ocr.git
-cd daily-record-ocr
-
-# 创建虚拟环境
-python3 -m venv .venv
-source .venv/bin/activate
-
-# 安装依赖
-pip install -r requirements.txt
-
-# 启动服务
-python3 -m app.main
-```
-
-**Windows：**
-
-```cmd
-git clone https://github.com/liumingyang-maker/daily-record-ocr.git
-cd daily-record-ocr
-
-python -m venv .venv
-.venv\Scripts\activate
-
-pip install -r requirements.txt
-
-python -m app.main
-```
-
-浏览器访问：**http://127.0.0.1:8765**
-
-### 使用启动脚本（推荐）
-
-```bash
-# macOS / Linux
-./launcher/run.sh
-
-# Windows
-launcher\run.bat
-```
-
-首次运行会自动创建虚拟环境、安装依赖、启动服务并打开浏览器。
-
-### 更新到最新版本
-
-**方式一：命令行更新（推荐）**
-
-```bash
-# 进入项目目录
-cd daily-record-ocr
-
-# macOS / Linux
-./launcher/update.sh
-
-# Windows
-launcher\update.bat
-```
-
-脚本会自动检查远程更新、显示更新内容、确认后拉取代码并安装依赖。
-
-> 如果安装在家目录，完整路径为 `~/daily-record-ocr/launcher/update.sh`
-
-**方式二：Web 页面更新**
-
-启动服务后访问 http://127.0.0.1:8765/settings，点击「检查更新」→「一键更新」。
-
-**方式三：手动更新**
-
-```bash
-git pull
-pip install -r requirements.txt
-```
+- 不再使用 MiMo，也不绑定任何厂商模型。
+- 默认不使用 PaddleOCR、OpenCV、SQLAlchemy、Alembic。
+- 整张图片或多张图片一次交给视觉模型，保留手写内容的空间关联。
+- 用 `config/record_schema.yaml` 定义识别字段和提示词。
+- 用 `config/export.yaml` 定义固定 Excel 的单元格与表格映射。
+- 每个任务只保存一个目录和几个 JSON/图片文件，不使用数据库。
+- 保留旧 `app/` 代码作为参考，但默认入口切换到 `lite_app`。
 
 ## 项目结构
 
-```
-daily-record-ocr/
-├── app/
-│   ├── main.py                    # FastAPI 入口
-│   ├── settings.py                # 环境配置
-│   ├── configs/                   # YAML 配置文件（8 个）
-│   ├── interfaces/                # Interface 层
-│   │   ├── web_routes.py          # Web 页面路由
-│   │   ├── api_routes.py          # API 路由
-│   │   ├── templates/             # Jinja2 模板（7 个页面）
-│   │   └── static/                # CSS/JS
-│   ├── application/               # Application 层（9 个服务）
-│   │   ├── upload_service.py      # 图片上传
-│   │   ├── import_service.py      # 历史导入
-│   │   ├── preprocess_service.py  # 图像预处理
-│   │   ├── ocr_service.py         # OCR 识别
-│   │   ├── mimo_service.py        # MiMo 大模型
-│   │   ├── fusion_service.py      # 候选融合
-│   │   ├── export_service.py      # Excel 导出
-│   │   ├── settings_service.py    # 系统设置
-│   │   └── update_service.py      # 版本更新
-│   ├── domain/                    # Domain 层
-│   │   └── matcher.py             # 物料/客户/产品匹配器
-│   ├── infrastructure/            # Infrastructure 层
-│   │   ├── database/              # SQLAlchemy（20 张表）
-│   │   ├── image/                 # OpenCV 图像处理
-│   │   ├── ocr/                   # OCR 引擎抽象
-│   │   ├── vision/                # MiMo API 抽象
-│   │   ├── history_import/        # 文件解析器
-│   │   ├── excel/                 # Excel 导出器
-│   │   └── storage/               # 文件存储
-│   └── tests/                     # 测试（87 个用例）
-├── data/                          # 运行时数据
-│   ├── storage/                   # 图片/导出文件
-│   └── backups/                   # 备份
-├── launcher/                      # 启动和打包脚本
-│   ├── run.sh / run.bat           # 启动器
-│   ├── update.sh / update.bat     # 一键更新
-│   ├── install.sh / install.bat   # 依赖安装
-│   ├── build_mac.sh               # macOS 打包
-│   └── build_windows.bat          # Windows 打包
-├── scripts/                       # 工具脚本
-├── docs/                          # 设计文档和实现计划
-├── README.md                      # 项目说明
-├── USAGE.md                       # 使用说明书
-└── requirements.txt               # Python 依赖
+```text
+lite_app/
+├── main.py          # FastAPI 页面和接口
+├── pipeline.py      # 图片 → 模型 → JSON → 校验
+├── providers.py     # 可替换视觉模型适配器
+├── exporter.py      # 固定 Excel 模板映射
+├── image_utils.py   # Pillow 旋转与缩放
+├── storage.py       # 文件夹 + JSON 存储
+└── templates/       # 两个简单页面
+config/
+├── app.yaml         # 应用和模型配置
+├── record_schema.yaml
+├── export.yaml
+└── mock_result.json
 ```
 
-## 配置说明
+## 快速开始
 
-### Web 设置界面（推荐）
-
-启动服务后访问 **http://127.0.0.1:8765/settings**，可在页面上直接配置：
-- MiMo API Key、模型版本、API 地址
-- 服务地址、端口、日志级别
-- 支持 API 连接测试
-- **一键更新**：检查 GitHub 最新版本、查看更新日志、一键拉取并安装依赖
-
-### 环境变量 (.env)
-
-也可以手动编辑 `.env` 文件：
-
-```env
-APP_HOST=127.0.0.1
-APP_PORT=8765
-DATABASE_URL=sqlite:///data/app.sqlite3
-MIMO_API_KEY=          # MiMo API Key（可选，不填则使用 mock）
-MIMO_MODEL=mimo-v2.5
-LOG_LEVEL=INFO
-```
-
-### YAML 配置文件
-
-| 文件 | 用途 |
-|------|------|
-| `template_daily_record_v1.yaml` | 模板坐标（记录区域、字段 ROI） |
-| `ocr.yaml` | OCR 引擎参数 |
-| `mimo.yaml` | MiMo API 参数 |
-| `rules.yaml` | 字段规则和置信度阈值 |
-| `unit_rules.yaml` | 单位换算规则 |
-| `import_profiles.yaml` | 导入格式列映射 |
-| `export_config.yaml` | 导出 Sheet 配置 |
-| `app.yaml` | 应用基础配置 |
-
-## 数据库表
-
-系统使用 SQLite，共 20 张表：
-
-| 分类 | 表名 | 说明 |
-|------|------|------|
-| 识别 | recognition_jobs | 识别任务 |
-| | production_records | 生产记录 |
-| | record_material_items | 配方明细 |
-| | record_machine_params | 机器参数 |
-| | record_temperatures | 温度数据 |
-| | field_recognition_results | 字段识别结果 |
-| | field_candidates | 字段候选值 |
-| 知识库 | customers | 客户库 |
-| | products | 产品库 |
-| | materials | 物料库 |
-| | material_aliases | 物料别名 |
-| | formulas | 历史配方 |
-| | formula_items | 配方明细 |
-| 导入 | import_batches | 导入批次 |
-| | import_staging_records | 暂存记录 |
-| | import_staging_material_items | 暂存物料 |
-| | import_staging_warnings | 导入警告 |
-| 日志 | manual_correction_logs | 修正日志 |
-| | mimo_request_logs | MiMo 请求日志 |
-| | mimo_cache | MiMo 缓存 |
-
-## 打包部署
-
-### macOS
+Python 3.11+：
 
 ```bash
-./launcher/build_mac.sh
-# 生成: dist/每日生产记录识别系统.app
+git clone https://github.com/liumingyang-maker/daily-record-ocr.git
+cd daily-record-ocr
+python3 -m venv .venv
+source .venv/bin/activate       # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python -m app.main
 ```
 
-### Windows
+浏览器打开 `http://127.0.0.1:8765`。默认使用 `mock`，无需 API 即可测试上传、人工修正和 Excel 导出。
 
-```cmd
-launcher\build_windows.bat
-:: 生成: dist\DailyRecordOCR\
+原启动脚本仍可使用：
+
+```bash
+./launcher/run.sh        # macOS / Linux
+launcher\run.bat         # Windows
 ```
+
+## 接入任意视觉模型
+
+复制环境变量示例：
+
+```bash
+cp .env.example .env
+```
+
+然后设置：
+
+```env
+VISION_PROVIDER=openai_compatible
+VISION_BASE_URL=http://127.0.0.1:11434/v1
+VISION_ENDPOINT=/chat/completions
+VISION_API_KEY=
+VISION_MODEL=qwen2.5-vl:7b
+```
+
+当前内置的是 OpenAI-compatible Chat Completions 适配器。很多本地服务和云端服务都可通过兼容接口接入。服务端不支持 `response_format=json_schema` 时，保持 `config/app.yaml` 中 `use_json_schema: false`；Schema 仍会放进提示词，返回后再由本地校验。
+
+### 接入非兼容接口
+
+只需实现一个类：
+
+```python
+from pathlib import Path
+from typing import Any
+from lite_app.providers import VisionProvider
+
+class MyVisionProvider(VisionProvider):
+    async def analyze(
+        self,
+        image_paths: list[Path],
+        system_prompt: str,
+        user_prompt: str,
+        json_schema: dict[str, Any],
+    ) -> str:
+        # 调用你的模型，并返回包含 JSON 的文本
+        return '{"page_heading":"", "records":[], "warnings":[]}'
+```
+
+然后在 `lite_app/providers.py` 的 `build_provider()` 中注册一个名称即可。业务流程、页面和 Excel 导出都无需修改。
+
+## 按你的手写格式调整字段
+
+编辑 `config/record_schema.yaml`。默认 Schema 针对你给出的笔记结构：
+
+- 页面标题或人名 `page_heading`
+- 多条记录 `records`
+- 每条记录的日期、配方/产品标题
+- 原料名称与数量 `materials`
+- “工艺”参数 `process_parameters`
+- 备注、整体置信度和不确定项
+
+提示词特别要求模型按“原料名称行”和“下方数量行”的水平位置配对，避免数量串位。看不清时返回空字符串和 warning，不允许凭经验补写。
+
+## 写入固定 Excel 文档
+
+### 直接生成工作簿
+
+默认 `config/export.yaml` 会生成：
+
+1. `记录汇总`
+2. `配方明细`
+3. `工艺参数`
+
+### 写入你已有的固定模板
+
+把模板放到项目中，例如：
+
+```text
+config/my_fixed_template.xlsx
+```
+
+然后修改：
+
+```yaml
+excel:
+  template_path: config/my_fixed_template.xlsx
+```
+
+固定单元格：
+
+```yaml
+cells:
+  - sheet: 记录汇总
+    cell: B1
+    value: "$root.page_heading"
+```
+
+重复表格：
+
+```yaml
+tables:
+  - sheet: 配方明细
+    source: records
+    expand: materials
+    start_row: 6
+    include_header: false
+    columns:
+      - column: A
+        value: "$parent_index"
+      - column: B
+        value: "$parent.record_date"
+      - column: C
+        value: name
+      - column: D
+        value: amount
+```
+
+可用表达式：
+
+- `$index`：当前列表序号
+- `$parent_index`：所属记录序号
+- `$root.page_heading`：顶层字段
+- `$parent.record_date`：父记录字段
+- `name`：当前材料或工艺项字段
+- `literal:固定文字`：固定值
+
+这样模型输出格式和最终文档布局完全解耦，换模型、换提示词、换 Excel 模板都不用改主流程代码。
+
+## 图片方向
+
+你给出的示例是手机竖图，但正文需要逆时针 90° 才能正常阅读。默认上传选项会：
+
+1. 应用 EXIF 方向；
+2. 如果仍是竖图，逆时针 90° 转为横图；
+3. 最长边缩放到 2048 像素。
+
+上传页面也可明确选择不旋转、顺时针、逆时针或 180°。
+
+## 数据目录
+
+每个任务保存在：
+
+```text
+data/jobs/<任务号>/
+├── job.json
+├── source_*.jpg
+├── prepared_*.jpg
+├── raw_response.txt
+├── result.json
+└── recognized-<任务号>.xlsx
+```
+
+无需数据库。备份整个 `data/jobs` 即可迁移。
+
+## 旧版代码
+
+旧的分层实现仍位于 `app/`，其完整依赖保存在 `requirements-legacy.txt`。轻量版默认入口通过 `app/main.py` 转发到 `lite_app.main`，日常使用无需安装旧依赖。
 
 ## 测试
 
 ```bash
-# 运行全部测试
-python3 -m pytest app/tests/ -v
-
-# 运行特定测试
-python3 -m pytest app/tests/test_import_parser.py -v
+pip install -r requirements-dev.txt
+pytest
 ```
-
-## 扩展指南
-
-### 替换 OCR 引擎
-
-```python
-# 实现 OCREngine 接口
-from app.infrastructure.ocr.engine import OCREngine, OCRResult
-
-class MyOCREngine(OCREngine):
-    def recognize(self, image_path: str) -> OCRResult:
-        # 你的 OCR 逻辑
-        return OCRResult(text="识别结果", confidence=0.95)
-
-# 注册
-from app.infrastructure.ocr import set_ocr_engine
-set_ocr_engine(MyOCREngine())
-```
-
-### 替换 MiMo 客户端
-
-```python
-from app.infrastructure.vision.mimo_client import MimoClient, MimoResult
-
-class MyMimoClient(MimoClient):
-    def recognize_record(self, image_path: str) -> MimoResult:
-        # 你的 API 调用逻辑
-        return MimoResult(fields={...}, success=True)
-
-from app.infrastructure.vision import set_mimo_client
-set_mimo_client(MyMimoClient())
-```
-
-## 许可证
-
-MIT License
